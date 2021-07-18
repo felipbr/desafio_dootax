@@ -1,0 +1,32 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport"
+	content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+<title>SR_M_MS</title>
+
+<link rel="stylesheet" th:href="@{/css/main.css}" />
+<link rel="stylesheet"
+	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+
+</head>
+
+<body>
+	<form th:action="@{/consultar}">
+	    <input type="submit" value="Consultar chaves" />
+	</form>
+	<form th:action="@{/validador/adicionar}">
+		<input type="text" th:name="chave">
+		<span> - </span>
+		<input type="submit" value="Adicionar"/> 
+	</form>
+	<form th:action="@{/validador/validar}" method="post">
+		<div th:if="${chaves != null}" th:each="chave : ${chaves}">
+			<span th:text="'Chave: '+ ${chave}"></span>
+		</div>
+		<input type="submit" value="Validar"/> 
+	</form>
+</body>
+</html>

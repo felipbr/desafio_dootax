@@ -1,0 +1,43 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport"
+	content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+<title>SR_M_MS</title>
+
+<link rel="stylesheet" th:href="@{/css/main.css}" />
+<link rel="stylesheet"
+	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+
+</head>
+
+<body>
+	<form th:action="@{/validador}">
+	    <input type="submit" value="Validar chaves" />
+	</form>
+	<form th:action="@{/consultar}">
+		<h1>
+			<span>Lista de chaves:</span>
+		</h1>
+		<span>Página</span> 
+		<input type="text" th:name="pagina" id="pagina" name="pagina" th:value="${pagina}" /> 
+			
+		<span> Código empresa</span> 
+		<input type="text" th:name="codigo" id="codigo" name="codigo" th:value="${codigo}" /> 
+		
+		<input type="submit" value="Pesquisar" />
+		<hr>
+		
+		<span th:if="${chaves == null || chaves.empty}">Sem chaves cadastradas</span>
+
+		<div th:if="${chaves != null && ! chaves.empty}"
+			th:each="chave : ${chaves}">
+			<span th:text="'Chave: '+ ${chave.chave} "></span> <span
+				th:if="${chave.status != null}" th:text="' - ' + ${chave.status}"></span>
+			<hr />
+		</div>
+	</form>
+</body>
+</html>

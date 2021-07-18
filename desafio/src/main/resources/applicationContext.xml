@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bean id="customResourceLoader" class="br.com.dootax.felipecb.desafio.utilitario.CustomResourceLoader"></bean>
