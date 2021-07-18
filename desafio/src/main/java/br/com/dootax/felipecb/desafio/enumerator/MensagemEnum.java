@@ -3,6 +3,10 @@ package br.com.dootax.felipecb.desafio.enumerator;
 public enum MensagemEnum {
 
 
+	LINHA_FORA_PADRAO("Linha fora do padrão."),
+	PROBLEMA_LEITURA_ARQUIVO("Ocorreu uma erro ao processar o arquivo."),
+	PROBLEMA_LEITURA_DIRETORIO("Erro ao ler o diretotio com os arquivos. Verifique a permissao."),
+	
 	ERRO_SERVIDOR("Erro inesperado."),
 	
 	// Mensagens erro na validação das condições

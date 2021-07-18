@@ -8,6 +8,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Calendar;
 import java.util.Scanner;
+import java.util.logging.FileHandler;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Component;
 
 import br.com.dootax.felipecb.desafio.dao.DocumentoRepository;
 import br.com.dootax.felipecb.desafio.entidade.Documento;
+import br.com.dootax.felipecb.desafio.enumerator.MensagemEnum;
 import br.com.dootax.felipecb.desafio.excecao.ValidacaoException;
 import br.com.dootax.felipecb.desafio.utilitario.Constante;
 import br.com.dootax.felipecb.desafio.utilitario.Validacao;
@@ -23,9 +26,29 @@ import br.com.dootax.felipecb.desafio.utilitario.Validacao;
 @Component
 public class ProcessoAutomatizado {
 
+	private static final String EXTENSAO_TXT = ".txt";
+
+	int linhaAtual = 0;
+	
+	Logger logger;
+	
 	@Autowired
 	DocumentoRepository chaveRepository;
 
+	
+	public ProcessoAutomatizado() {
+		logger =  Logger.getLogger(this.getClass().getName());
+		FileHandler fileHandler;
+		try {
+			fileHandler = new FileHandler(Constante.diretorioComErros()+"/Log.log");
+			logger.addHandler(fileHandler);
+		} catch (SecurityException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	/**
 	 * Ao final da execução, conta o tempo para executar o próximo
 	 */
@@ -35,30 +58,29 @@ public class ProcessoAutomatizado {
 		System.out.println("Inicio: " + Calendar.getInstance().getTime().toString());
 		
 		// Busca aos poucos os arquivos no diretorio
-		try (Stream<Path> paths = Files.walk(Paths.get(Constante.PASTA_PREDEFINIDA))) {
-			paths.filter(arquivo -> arquivo.toString().endsWith(".txt")).forEach(arquivo -> {
+		try (Stream<Path> paths = Files.walk(Paths.get(Constante.diretorioNovos()))) {
+			paths.filter(arquivo -> arquivo.toString().endsWith(EXTENSAO_TXT)).forEach(arquivo -> {
 				try {
-					String novoNome = arquivo.getFileName().toString();
-					novoNome += "_" + Calendar.getInstance().getTime().toString();
+					linhaAtual = 0;
+					String novoNome = arquivo.getFileName().toString().replace(EXTENSAO_TXT, "");
+					novoNome += "_" + Calendar.getInstance().getTime().getTime()+EXTENSAO_TXT;
 					
 					//Abordagem que consome menos memória
 					FileInputStream inputStream = new FileInputStream(arquivo.toAbsolutePath().toString());
 					Scanner sc = null;
 					long totalLinha = (Files.lines(Paths.get(arquivo.toAbsolutePath().toString()))).count();
-					int linhaAtual = 0;
 					try {
 					    sc = new Scanner(inputStream, "UTF-8");
 					    while (sc.hasNextLine()) {
 					        try {
-								salvarLinha(sc.nextLine(), totalLinha, linhaAtual++);
+								salvarLinha(sc.nextLine(), totalLinha, ++linhaAtual);
 							} catch (ValidacaoException e) {
-								System.out.println("Deu erro: "+e.getMessage());
-								return;
+								gerarErro(null, e.getMessage(), novoNome);
 							}
 					    }
 					    // Scanner suspende excecao
 					    if (sc.ioException() != null) {
-					    	System.out.println("Deu erro: "+sc.ioException().getMessage());
+							gerarErro(arquivo, MensagemEnum.PROBLEMA_LEITURA_ARQUIVO.getMensagem(), novoNome);
 							return;
 					    }
 					} finally {
@@ -70,18 +92,16 @@ public class ProcessoAutomatizado {
 					    }
 					}
 					// Move para a pasta de processados
-					arquivo.toFile().renameTo(new File(Constante.PASTA_PROCESSADOS, novoNome));
+					arquivo.toFile().renameTo(new File(Constante.diretorioProcessados(), novoNome));
 
 				} catch (IOException e) {
-					e.printStackTrace();
-					// TODO lançar erro de ler o arquivo
-					// Move para a pasta de com erros
-					arquivo.toFile().renameTo(new File(Constante.PASTA_ARQUIVO_COM_ERRO, arquivo.getFileName().toString()));
+					logger.severe(MensagemEnum.PROBLEMA_LEITURA_ARQUIVO.getMensagem());
+					return;
 				}
 			});
 		} catch (IOException e1) {
-			e1.printStackTrace();
-			// TODO lançar erro de ler o arquivo
+			logger.severe(MensagemEnum.PROBLEMA_LEITURA_DIRETORIO.getMensagem());
+			return;
 		}
 
 		System.out.println("Fim: "+Calendar.getInstance().getTime().toString());
@@ -95,56 +115,30 @@ public class ProcessoAutomatizado {
 		String[] valores = linha.split(CARACTER_DELIMITADOR);
 
 		if (valores.length != 2) {
-			// TODO salvar em arquivo o numero da linha que deu erro
-			return;
+			throw new ValidacaoException(MensagemEnum.LINHA_FORA_PADRAO);
 		}
 
-		// TODO verificar se é necessário
+		// Verificar se é necessário
 		// Validar codigo da empresa com 4 caracteres
 		Documento doc = new Documento(Validacao.chave(valores[1]), Validacao.codigoEmpresa(valores[0]));
 
-		if(atual%100000 == 0 || atual+10 > total)
-			System.out.println(atual+"/"+total+ ". Código da empresa: " + doc.getId().getCodigoEmpresa() + ". Chave: " + doc.getId().getChave());
+		//Exibe a cada 100.000 pra ver que ainda está rodando e exibe os ultimos 3 (apenas para testes).
+//		if(atual%100000 == 0 || atual+3 >= total)
+//			System.out.println(atual+"/"+total+ ". Código da empresa: " + doc.getId().getCodigoEmpresa() + ". Chave: " + doc.getId().getChave());
 			
 		chaveRepository.save(doc);
-
 	}
 	
-	
-	
-//	public void buscarArquivoMenosEficienteInicial() {
-//		System.out.println("Inicio: " + Calendar.getInstance().getTime().toString());
-//		// Busca aos poucos os arquivos no diretorio
-//		try (Stream<Path> paths = Files.walk(Paths.get(Constante.PASTA_PREDEFINIDA))) {
-//			paths.filter(arquivo -> arquivo.toString().endsWith(".txt")).forEach(arquivo -> {
-//				try {
-//					String novoNome = arquivo.getFileName().toString();
-//					novoNome += "_" + Calendar.getInstance().getTime().toString();
-//					// le linha a linha do arquivo 
-//					Files.lines(arquivo).forEach(s -> {
-//						try {
-//							salvarLinha(s);
-//						} catch (ValidacaoException e) {
-//							System.out.println("Deu erro: "+e.getMessage());
-//							return;
-//						}
-//					});
-//
-//					// Move para a pasta de processados
-//					arquivo.toFile().renameTo(new File(Constante.PASTA_PROCESSADOS, novoNome));
-//
-//				} catch (IOException e) {
-//					e.printStackTrace();
-//					// TODO lançar erro de ler o arquivo
-//					// Move para a pasta de com erros
-//					arquivo.toFile().renameTo(new File(Constante.PASTA_ARQUIVO_COM_ERRO, arquivo.getFileName().toString()));
-//				}
-//			});
-//		} catch (IOException e1) {
-//			e1.printStackTrace();
-//			// TODO lançar erro de ler o arquivo
-//		}
-//		System.out.println("Fim: "+Calendar.getInstance().getTime().toString());
-//	}
-
+	/**
+	 * Arquivo null não move de lugar
+	 * @param arquivo
+	 * @param mensagemErro
+	 * @param novoNome
+	 */
+	private void gerarErro(Path arquivo, String mensagemErro, String novoNome) {
+		logger.severe("Arquivo: "+novoNome+ ". Linha: "+linhaAtual+ ": "+mensagemErro);
+		if(null != arquivo) {
+			arquivo.toFile().renameTo(new File(Constante.diretorioComErros(), novoNome));
+		}
+	}
 }
