@@ -27,4 +27,4 @@ Código criado:
 
 # Projeto frontEnd
 
-Criado de forma simples, apenas para consumir os serviços de validação das chaves (2) e listagem das chaves (3).
+Criado de forma simplória com o intuito de testar os serviços de validação das chaves (2) e listagem das chaves (3), e com isso validar visualmente a funcionalidade.
