@@ -1,4 +1,4 @@
-package br.com.dootax.felipe.desafio;
+package br.com.dootax.felipecb.desafio;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
