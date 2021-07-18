@@ -1,4 +1,4 @@
-# desafio_1
+# Projeto desafio
 
 Projeto spring boot que compreende três funcionalidades:
 
@@ -9,7 +9,6 @@ Obs: Um arquivo válido possui dois campos, código de empresa e chave do docume
 0060;35170501512104006006550010001597471100000014
 0060;35170501512104006006550010001599431100000016
 0090;35170501512104006006550010001592701100000015
-
 
 2) Uma API que recebe uma lista de chaves e altera o status dessas chaves na tabela para "Validado". A resposta da API deve é síncrona.
 A lista de chaves possui no máximo 20 itens, e cada um deles é validado para possuir 44 caracteres numéricos.
@@ -23,3 +22,9 @@ Código criado:
 - API Restful.
 - Banco de dados Postgres utilizando de Spring Data JPA para a interação com a tabela.
 - Foi analisado a performance, considerando arquivo com milhares de linhas e milhares de arquivos.
+
+## Obs: Foi utilizado de JUnit para criar alguns testes sobre os serviços.
+
+# Projeto frontEnd
+
+Criado de forma simples, apenas para consumir os serviços de validação das chaves (2) e listagem das chaves (3).
