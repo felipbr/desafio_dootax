@@ -14,6 +14,8 @@ Obs: Um arquivo válido possui dois campos, código de empresa e chave do docume
 A lista de chaves possui no máximo 20 itens, e cada um deles é validado para possuir 44 caracteres numéricos.
 A resposta da API lista as chaves cujo status foram alterados com sucesso, e as que não foram por algum erro (chave inexistente, incompleta, etc)
 
+Brecha no desafio: No cenário acima, caso exista duas empresas com o mesmo código de documento, ambos serão validados.
+
  3) Uma API que faz a listagem das chaves existentes no banco de dados e seu status atual. É possível buscar as chaves de uma empresa específica, informada na request.
 A reposta da API deve apresenta uma lista de no máximo 20 chaves por request, e possibilita que o usuário consulte todas as chaves existentes na tabela.
 
